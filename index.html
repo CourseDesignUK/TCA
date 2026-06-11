@@ -260,7 +260,7 @@
             ctx.lineWidth = 0.5;
             const gridSize = scale * 10; 
             for (let x = centerX % gridSize; x < canvas.width; x += gridSize) {
-                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); stroke();
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
             }
             for (let y = centerY % gridSize; y < canvas.height; y += gridSize) {
                 ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
@@ -302,8 +302,8 @@
                 ctx.restore();
             }
 
-            // CORRECTED WIND VECTOR ARROW DIRECTION
-            // The arrow starts at the perimeter from the source direction angle and points directly towards the aircraft center.
+            // CORRECTED VECTOR WIND ARROW DIRECTION
+            // The arrow starts at the perimeter from the source direction angle and points straight into the center.
             ctx.save();
             const arrowLength = Math.min(45, rawMinimumViewportDimension * 0.1) + (windSpeed * 0.4);
             const arrowOriginDistance = tcaRadius + (20 * scale);
@@ -313,20 +313,20 @@
             const arrowY = centerY + (sourceY * arrowOriginDistance);
 
             ctx.translate(arrowX, arrowY);
-            // Rotates the local canvas context matrix so the arrow draws facing the aircraft center point
-            ctx.rotate(compassRad);
+            // Rotates the local canvas context matrix so the 0,0 drawing vector faces inward toward the aircraft center
+            ctx.rotate(compassRad + Math.PI);
 
             ctx.strokeStyle = '#ef4444';
             ctx.fillStyle = '#ef4444';
             ctx.lineWidth = 2.5;
 
-            // Draw shaft extending downwind towards the aircraft center
+            // Draw shaft extending downwind from edge source coordinate
             ctx.beginPath();
             ctx.moveTo(0, 0);
             ctx.lineTo(0, arrowLength);
             ctx.stroke();
 
-            // Draw arrowhead at the terminal end, pointing directly to the center coordinates
+            // Draw arrowhead matching vector orientation, pointing precisely toward the center point destination
             ctx.beginPath();
             ctx.moveTo(0, arrowLength);
             ctx.lineTo(-5, arrowLength - 10);
