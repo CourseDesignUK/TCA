@@ -20,7 +20,7 @@
         <div class="flex justify-between items-start">
             <div>
                 <h1 class="text-lg md:text-xl font-bold text-white flex items-center gap-2">
-                    <span class="text-red-500"></span> DFRP TCA/PCA Calculator
+                    <span class="text-red-500">⚠️</span> ARFF 2D VISUALIZER
                 </h1>
                 <p class="text-[10px] md:text-xs text-slate-400 mt-0.5">CAP 168 / ICAO Critical Area Calculator</p>
             </div>
@@ -80,9 +80,9 @@
                 <div class="flex flex-col gap-1">
                     <div class="flex justify-between text-[11px]">
                         <span class="text-slate-400">Wind From Direction</span>
-                        <span id="windDirVal" class="text-white font-mono">270°</span>
+                        <span id="windDirVal" class="text-white font-mono">360°</span>
                     </div>
-                    <input type="range" id="windDirInput" min="0" max="359" step="1" value="270" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                    <input type="range" id="windDirInput" min="0" max="360" step="1" value="360" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer">
                 </div>
 
                 <div class="flex flex-col gap-1">
@@ -123,7 +123,7 @@
                 </label>
             </div>
             <div class="bg-slate-900/90 backdrop-blur border border-slate-700 text-slate-400 font-mono text-[10px] px-2 py-1 rounded shadow-lg">
-                Aircraft Nose: 000° (N)
+                Aircraft Nose: 360° (N)
             </div>
         </div>
 
@@ -244,14 +244,13 @@
             const tcaRadius = maxTcaRadiusMeters * scale;
             const pcaRadius = Math.sqrt(pca / Math.PI) * scale;
 
-            // COMPASS WIND MODEL MATH (0° = Wind from North/Top blowing Southward)
+            // COMPASS WIND MODEL MATH (0°/360° = Wind from North/Top blowing Southward)
             const compassRad = (windDir * Math.PI) / 180;
             
-            // Source location vector coordinates (Where the wind originates)
             const sourceX = Math.sin(compassRad);
             const sourceY = -Math.cos(compassRad);
 
-            // Footprint path drift calculation shifts DOWNWIND (Opposite of source vector direction)
+            // Footprint paths drift DOWNWIND
             const driftFactor = windSpeed * 0.45 * scale;
             const driftX = -sourceX * driftFactor;
             const driftY = -sourceY * driftFactor;
@@ -303,316 +302,35 @@
                 ctx.restore();
             }
 
-            // CORRECTED WIND VECTOR ARROW
-            // The arrow originates at the outer perimeter from the source angle and points INWARD downwind.
+            // CORRECTED VECTOR WIND ARROW DIRECTION
+            // The arrow starts at the perimeter from the source direction angle and points straight into the center.
             ctx.save();
             const arrowLength = Math.min(45, rawMinimumViewportDimension * 0.1) + (windSpeed * 0.4);
             const arrowOriginDistance = tcaRadius + (20 * scale);
             
-            // Plot origin location coordinate at the source boundary point
+            // Plot origin coordinates at the windward source perimeter boundary
             const arrowX = centerX + (sourceX * arrowOriginDistance);
             const arrowY = centerY + (sourceY * arrowOriginDistance);
 
             ctx.translate(arrowX, arrowY);
-            // Rotate local coordinate matrix to point precisely toward center (downwind trajectory)
+            // Rotates the local canvas context matrix so the 0,0 drawing vector faces inward toward the aircraft center
             ctx.rotate(compassRad + Math.PI);
 
             ctx.strokeStyle = '#ef4444';
             ctx.fillStyle = '#ef4444';
             ctx.lineWidth = 2.5;
 
-            // Draw shaft extending downwind toward center
+            // Draw shaft extending downwind from edge source coordinate
             ctx.beginPath();
             ctx.moveTo(0, 0);
             ctx.lineTo(0, arrowLength);
             ctx.stroke();
 
-            // Draw arrowhead at the downwind termination tip
+            // Draw arrowhead matching vector orientation, pointing precisely toward the center point destination
             ctx.beginPath();
             ctx.moveTo(0, arrowLength);
             ctx.lineTo(-5, arrowLength - 10);
             ctx.lineTo(5, arrowLength - 10);
-            ctx.closePath();
-            ctx.fill();
-            ctx.restore();
-        }
-
-        lengthInput.addEventListener('input', () => { presetSelect.value = 'custom'; calculateAndDraw(); });
-        widthInput.addEventListener('input', () => { presetSelect.value = 'custom'; calculateAndDraw(); });
-        windDirInput.addEventListener('input', calculateAndDraw);
-        windSpeedInput.addEventListener('input', calculateAndDraw);
-
-        presetSelect.addEventListener('change', (e) => {
-            const selected = e.target.value;
-            if (selected !== 'custom') {
-                lengthInput.value = presets[selected].length;
-                widthInput.value = presets[selected].width;
-                calculateAndDraw();
-            }
-        });
-
-        toggleTCA.addEventListener('change', drawScene);
-        togglePCA.addEventListener('change', drawScene);
-        window.addEventListener('resize', resizeCanvas);
-
-        setTimeout(resizeCanvas, 100);
-    </script>
-</body>
-</html>                <div class="flex flex-col gap-1">
-                    <div class="flex justify-between text-[11px]">
-                        <span class="text-slate-400">Wind From Direction</span>
-                        <span id="windDirVal" class="text-white font-mono">270°</span>
-                    </div>
-                    <input type="range" id="windDirInput" min="0" max="359" step="1" value="270" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer">
-                </div>
-
-                <div class="flex flex-col gap-1">
-                    <div class="flex justify-between text-[11px]">
-                        <span class="text-slate-400">Wind Speed</span>
-                        <span id="windSpeedVal" class="text-white font-mono">15 kts</span>
-                    </div>
-                    <input type="range" id="windSpeedInput" min="0" max="50" step="1" value="15" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer">
-                </div>
-            </div>
-        </div>
-
-        <hr class="border-slate-700/50">
-
-        <div class="flex flex-col gap-2 grow">
-            <div class="grid grid-cols-2 md:grid-cols-1 gap-2">
-                <div class="bg-slate-900/50 border border-slate-800 rounded p-2 md:p-3 text-center">
-                    <div class="text-[10px] text-blue-400 font-semibold tracking-wide uppercase">TCA</div>
-                    <div id="tcaDisplay" class="text-lg md:text-2xl font-extrabold text-blue-400 font-mono mt-0.5">1,511 m²</div>
-                </div>
-
-                <div class="bg-slate-900/50 border border-slate-800 rounded p-2 md:p-3 text-center">
-                    <div class="text-[10px] text-emerald-400 font-semibold tracking-wide uppercase">PCA</div>
-                    <div id="pcaDisplay" class="text-lg md:text-2xl font-extrabold text-emerald-400 font-mono mt-0.5">997 m²</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="grow h-3/5 md:h-full relative order-1 md:order-2">
-        <div class="absolute top-3 left-3 right-3 z-10 flex justify-between items-center pointer-events-none">
-            <div class="bg-slate-900/90 backdrop-blur border border-slate-700 rounded-lg px-2.5 py-1.5 flex items-center gap-3 text-[11px] pointer-events-auto shadow-lg">
-                <label class="flex items-center gap-1 cursor-pointer text-blue-400 font-medium">
-                    <input type="checkbox" id="toggleTCA" checked class="accent-blue-500"> TCA
-                </label>
-                <label class="flex items-center gap-1 cursor-pointer text-emerald-400 font-medium">
-                    <input type="checkbox" id="togglePCA" checked class="accent-emerald-500"> PCA
-                </label>
-            </div>
-            <div class="bg-slate-900/90 backdrop-blur border border-slate-700 text-slate-400 font-mono text-[10px] px-2 py-1 rounded shadow-lg">
-                Aircraft Nose: 000° (N)
-            </div>
-        </div>
-
-        <div id="canvasContainer" class="w-full h-full bg-slate-950">
-            <canvas id="tacticalCanvas"></canvas>
-        </div>
-    </div>
-
-    <div id="formulaModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-        <div class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-sm p-4 shadow-2xl flex flex-col gap-3">
-            <div class="flex justify-between items-center">
-                <h3 class="text-sm font-bold tracking-wider text-slate-200 uppercase">Regulatory Formulas</h3>
-                <button id="closeModalBtn" class="text-slate-400 hover:text-white text-lg font-bold w-6 h-6 flex items-center justify-center rounded bg-slate-800 border border-slate-700 cursor-pointer">
-                    &times;
-                </button>
-            </div>
-            <hr class="border-slate-800">
-            <div class="text-xs text-slate-300 leading-relaxed bg-slate-950 p-3 rounded-lg border border-slate-800 font-mono flex flex-col gap-2">
-                <div><span class="text-blue-400 font-bold">• IF L &lt; 20m:</span><br>&nbsp;&nbsp;TCA = L × (12 + W)</div>
-                <div><span class="text-blue-400 font-bold">• IF L ≥ 20m:</span><br>&nbsp;&nbsp;TCA = L × (30 + W)</div>
-                <hr class="border-slate-800 my-1">
-                <div><span class="text-emerald-400 font-bold">• PCA DERIVATION:</span><br>&nbsp;&nbsp;PCA = 0.66 × TCA</div>
-            </div>
-            <div class="text-[10px] text-slate-500 font-sans italic leading-tight">
-                Derived in accordance with UK Civil Aviation Authority (CAA) CAP 168 Aerodrome Licensing Standards.
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const presets = {
-            a320: { length: 37.57, width: 3.95 },
-            a321: { length: 44.51, width: 3.95 },
-            a330: { length: 63.66, width: 5.64 },
-            a350: { length: 66.80, width: 5.96 },
-            a380: { length: 72.72, width: 7.14 },
-            b737: { length: 39.52, width: 3.76 },
-            b739: { length: 42.11, width: 3.76 },
-            b777: { length: 63.73, width: 6.20 },
-            b787: { length: 62.80, width: 5.77 },
-            e190: { length: 36.24, width: 3.01 },
-            atr72: { length: 27.17, width: 2.57 },
-            c17: { length: 53.00, width: 6.50 },        
-            a400m: { length: 45.10, width: 5.64 },      
-            c130j: { length: 34.37, width: 4.30 },      
-            wedgetail: { length: 33.60, width: 3.76 },  
-            rivetjoint: { length: 41.53, width: 4.30 }, 
-            poseidon: { length: 39.47, width: 3.76 }    
-        };
-
-        const lengthInput = document.getElementById('lengthInput');
-        const widthInput = document.getElementById('widthInput');
-        const windDirInput = document.getElementById('windDirInput');
-        const windSpeedInput = document.getElementById('windSpeedInput');
-        const presetSelect = document.getElementById('aircraftPreset');
-
-        const lengthVal = document.getElementById('lengthVal');
-        const widthVal = document.getElementById('widthVal');
-        const windDirVal = document.getElementById('windDirVal');
-        const windSpeedVal = document.getElementById('windSpeedVal');
-
-        const tcaDisplay = document.getElementById('tcaDisplay');
-        const pcaDisplay = document.getElementById('pcaDisplay');
-
-        const toggleTCA = document.getElementById('toggleTCA');
-        const togglePCA = document.getElementById('togglePCA');
-
-        const canvas = document.getElementById('tacticalCanvas');
-        const ctx = canvas.getContext('2d');
-        const container = document.getElementById('canvasContainer');
-
-        const formulaModal = document.getElementById('formulaModal');
-        const openModalBtn = document.getElementById('openModalBtn');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-
-        const planeImage = new Image();
-        planeImage.src = 'Plane.png';
-        planeImage.onload = () => { drawScene(); };
-
-        openModalBtn.addEventListener('click', () => formulaModal.classList.remove('hidden'));
-        closeModalBtn.addEventListener('click', () => formulaModal.classList.add('hidden'));
-        formulaModal.addEventListener('click', (e) => { if(e.target === formulaModal) formulaModal.classList.add('hidden'); });
-
-        function resizeCanvas() {
-            canvas.width = container.clientWidth;
-            canvas.height = container.clientHeight;
-            drawScene();
-        }
-
-        function calculateAndDraw() {
-            lengthVal.innerText = `${lengthInput.value}m`;
-            widthVal.innerText = `${widthInput.value}m`;
-            windDirVal.innerText = `${windDirInput.value}°`;
-            windSpeedVal.innerText = `${windSpeedInput.value} kts`;
-            drawScene();
-        }
-
-        function drawScene() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-
-            const L = parseFloat(lengthInput.value);
-            const W = parseFloat(widthInput.value);
-            const windDir = parseFloat(windDirInput.value);
-            const windSpeed = parseFloat(windSpeedInput.value);
-
-            let tca = L < 20 ? L * (12 + W) : L * (30 + W);
-            const pca = tca * 0.66;
-
-            const maxTcaRadiusMeters = Math.sqrt(tca / Math.PI);
-            const physicalBufferMeters = maxTcaRadiusMeters + 25; 
-            const rawMinimumViewportDimension = Math.min(canvas.width, canvas.height);
-            
-            const scale = (rawMinimumViewportDimension * 0.42) / physicalBufferMeters;
-
-            const tcaRadius = maxTcaRadiusMeters * scale;
-            const pcaRadius = Math.sqrt(pca / Math.PI) * scale;
-
-            // CORRECTED SYSTEM VECTOR COMPASS LOGIC
-            // Convert compass degrees to Cartesian radians where 0 deg is North (-Y direction)
-            // Compass coordinates go clockwise: East = 90, South = 180, West = 270.
-            const compassRad = (windDir * Math.PI) / 180;
-            const windVectorX = Math.sin(compassRad);
-            const windVectorY = -Math.cos(compassRad); // HTML Canvas inverted Y coordinate modifier
-
-            // Drift mapping calculation moves the area footprint DOWNWIND
-            const driftFactor = windSpeed * 0.45 * scale;
-            const driftX = windVectorX * driftFactor;
-            const driftY = windVectorY * driftFactor;
-
-            // Draw Background Grid Lines
-            ctx.strokeStyle = '#1e293b';
-            ctx.lineWidth = 0.5;
-            const gridSize = scale * 10; 
-            for (let x = centerX % gridSize; x < canvas.width; x += gridSize) {
-                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-            }
-            for (let y = centerY % gridSize; y < canvas.height; y += gridSize) {
-                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-            }
-
-            // Render Footprint Boundary Zones
-            if (toggleTCA.checked) {
-                ctx.beginPath();
-                ctx.arc(centerX + driftX, centerY + driftY, tcaRadius, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(59, 130, 246, 0.08)';
-                ctx.fill();
-                ctx.strokeStyle = '#3b82f6';
-                ctx.lineWidth = 1.5;
-                ctx.setLineDash([4, 4]);
-                ctx.stroke();
-                ctx.setLineDash([]);
-            }
-
-            if (togglePCA.checked) {
-                ctx.beginPath();
-                ctx.arc(centerX + driftX, centerY + driftY, pcaRadius, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(16, 185, 129, 0.12)';
-                ctx.fill();
-                ctx.strokeStyle = '#10b981';
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-            }
-
-            // Draw Scaled Airframe Template
-            if (planeImage.complete && planeImage.naturalWidth !== 0) {
-                ctx.save();
-                ctx.translate(centerX, centerY);
-                
-                const targetHeight = L * scale;
-                const aspectRatio = planeImage.naturalWidth / planeImage.naturalHeight;
-                const targetWidth = targetHeight * aspectRatio;
-
-                ctx.drawImage(planeImage, -targetWidth / 2, -targetHeight / 2, targetWidth, targetHeight);
-                ctx.restore();
-            }
-
-            // CORRECTED WIND ARROW RENDERING
-            // Arrow originates on the windward boundary perimeter pointing directly into the aircraft center
-            ctx.save();
-            const arrowLength = Math.min(45, rawMinimumViewportDimension * 0.1) + (windSpeed * 0.4);
-            const arrowOriginDistance = tcaRadius + (20 * scale);
-            
-            // Calculate starting coordinate coordinates on the windward edge
-            const arrowX = centerX + (windVectorX * arrowOriginDistance);
-            const arrowY = centerY + (windVectorY * arrowOriginDistance);
-
-            ctx.translate(arrowX, arrowY);
-            // Rotate the local canvas matrix so the vector faces directly toward the system origin
-            ctx.rotate(compassRad + Math.PI);
-
-            ctx.strokeStyle = '#ef4444';
-            ctx.fillStyle = '#ef4444';
-            ctx.lineWidth = 2.5;
-
-            // Draw primary shaft line extending downwind toward center
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(0, arrowLength);
-            ctx.stroke();
-
-            // Draw standard arrowhead terminating exactly at the leading structural coordinate tip
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(-5, 10);
-            ctx.lineTo(5, 10);
             ctx.closePath();
             ctx.fill();
             ctx.restore();
