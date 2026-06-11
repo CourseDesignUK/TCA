@@ -80,9 +80,9 @@
                 <div class="flex flex-col gap-1">
                     <div class="flex justify-between text-[11px]">
                         <span class="text-slate-400">Wind From Direction</span>
-                        <span id="windDirVal" class="text-white font-mono">360°</span>
+                        <span id="windDirVal" class="text-white font-mono">270°</span>
                     </div>
-                    <input type="range" id="windDirInput" min="0" max="360" step="1" value="360" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                    <input type="range" id="windDirInput" min="0" max="359" step="1" value="270" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer">
                 </div>
 
                 <div class="flex flex-col gap-1">
@@ -123,7 +123,7 @@
                 </label>
             </div>
             <div class="bg-slate-900/90 backdrop-blur border border-slate-700 text-slate-400 font-mono text-[10px] px-2 py-1 rounded shadow-lg">
-                Aircraft Nose: 360° (N)
+                Aircraft Nose: 000° (N)
             </div>
         </div>
 
@@ -244,13 +244,14 @@
             const tcaRadius = maxTcaRadiusMeters * scale;
             const pcaRadius = Math.sqrt(pca / Math.PI) * scale;
 
-            // COMPASS WIND MODEL MATH (0°/360° = Wind from North/Top blowing Southward)
+            // COMPASS WIND MODEL MATH (0° = Wind from North/Top blowing Southward)
             const compassRad = (windDir * Math.PI) / 180;
             
+            // Source location vector coordinates (Where the wind originates)
             const sourceX = Math.sin(compassRad);
             const sourceY = -Math.cos(compassRad);
 
-            // Footprint paths drift DOWNWIND
+            // Footprint path drift calculation shifts DOWNWIND (Opposite of source vector direction)
             const driftFactor = windSpeed * 0.45 * scale;
             const driftX = -sourceX * driftFactor;
             const driftY = -sourceY * driftFactor;
@@ -302,31 +303,31 @@
                 ctx.restore();
             }
 
-            // CORRECTED VECTOR WIND ARROW DIRECTION
-            // The arrow starts at the perimeter from the source direction angle and points straight into the center.
+            // CORRECTED WIND VECTOR ARROW
+            // The arrow originates at the outer perimeter from the source angle and points INWARD downwind.
             ctx.save();
             const arrowLength = Math.min(45, rawMinimumViewportDimension * 0.1) + (windSpeed * 0.4);
             const arrowOriginDistance = tcaRadius + (20 * scale);
             
-            // Plot origin coordinates at the windward source perimeter boundary
+            // Plot origin location coordinate at the source boundary point
             const arrowX = centerX + (sourceX * arrowOriginDistance);
             const arrowY = centerY + (sourceY * arrowOriginDistance);
 
             ctx.translate(arrowX, arrowY);
-            // Rotates the local canvas context matrix so the 0,0 drawing vector faces inward toward the aircraft center
+            // Rotate local coordinate matrix to point precisely toward center (downwind trajectory)
             ctx.rotate(compassRad + Math.PI);
 
             ctx.strokeStyle = '#ef4444';
             ctx.fillStyle = '#ef4444';
             ctx.lineWidth = 2.5;
 
-            // Draw shaft extending downwind from edge source coordinate
+            // Draw shaft extending downwind toward center
             ctx.beginPath();
             ctx.moveTo(0, 0);
             ctx.lineTo(0, arrowLength);
             ctx.stroke();
 
-            // Draw arrowhead matching vector orientation, pointing precisely toward the center point destination
+            // Draw arrowhead at the downwind termination tip
             ctx.beginPath();
             ctx.moveTo(0, arrowLength);
             ctx.lineTo(-5, arrowLength - 10);
