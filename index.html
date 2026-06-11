@@ -171,6 +171,13 @@
         const ctx = canvas.getContext('2d');
         const container = document.getElementById('canvasContainer');
 
+        // Instantiate Image Element for Plane Object
+        const planeImage = new Image();
+        planeImage.src = 'Plane.jpg'; // Load asset from identical directory source
+        planeImage.onload = () => {
+            drawScene();
+        };
+
         function resizeCanvas() {
             canvas.width = container.clientWidth;
             canvas.height = container.clientHeight;
@@ -250,74 +257,27 @@
                 ctx.stroke();
             }
 
-            // 5. Draw Top-Down Schematic Vector Representation of Aircraft
-            ctx.save();
-            ctx.translate(centerX, centerY);
-            // Fuselage is structurally fixed to a heading of 000° (North) up-screen
+            // 5. Draw Loaded Aircraft Image Template Asset
+            if (planeImage.complete && planeImage.naturalWidth !== 0) {
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                
+                // Map dimensional height precisely to length parameter scaled metrics
+                const targetHeight = L * scale;
+                // Preserve source aspect ratio configuration for clean rendering
+                const aspectRatio = planeImage.naturalWidth / planeImage.naturalHeight;
+                const targetWidth = targetHeight * aspectRatio;
 
-            const isMilitary = ['c17', 'a400m', 'c130j', 'wedgetail', 'rivetjoint', 'poseidon'].includes(presetSelect.value);
-            const airframeColor = isMilitary ? '#64748b' : '#94a3b8';
-
-            const pLen = L * scale;
-            const pWid = W * scale;
-
-            // Wings Span & Geometry Mapping
-            const wingSpan = pLen * 1.10;
-            const wingRoot = pLen * 0.20;
-            const wingTip = pLen * 0.04;
-            const wingOffsetZ = pLen * 0.08; 
-
-            ctx.fillStyle = airframeColor;
-            ctx.beginPath();
-            // Left Wing
-            ctx.moveTo(-pWid / 2, -wingOffsetZ);
-            ctx.lineTo(-wingSpan / 2, wingOffsetZ + (wingRoot * 0.1));
-            ctx.lineTo(-wingSpan / 2, wingOffsetZ + (wingRoot * 0.1) + wingTip);
-            ctx.lineTo(-pWid / 2, -wingOffsetZ + wingRoot);
-            // Right Wing
-            ctx.moveTo(pWid / 2, -wingOffsetZ);
-            ctx.lineTo(wingSpan / 2, wingOffsetZ + (wingRoot * 0.1));
-            ctx.lineTo(wingSpan / 2, wingOffsetZ + (wingRoot * 0.1) + wingTip);
-            ctx.lineTo(pWid / 2, -wingOffsetZ + wingRoot);
-            ctx.fill();
-
-            // Tailplane (Horizontal Stabilizers)
-            const tpSpan = pLen * 0.42;
-            const tpRoot = pLen * 0.10;
-            const tpPositionZ = (pLen * 0.45);
-
-            ctx.beginPath();
-            ctx.moveTo(-pWid * 0.2, tpPositionZ);
-            ctx.lineTo(-tpSpan / 2, tpPositionZ + (tpRoot * 0.3));
-            ctx.lineTo(-tpSpan / 2, tpPositionZ + tpRoot);
-            ctx.lineTo(-pWid * 0.1, tpPositionZ + tpRoot);
-            
-            ctx.moveTo(pWid * 0.2, tpPositionZ);
-            ctx.lineTo(tpSpan / 2, tpPositionZ + (tpRoot * 0.3));
-            ctx.lineTo(tpSpan / 2, tpPositionZ + tpRoot);
-            ctx.lineTo(pWid * 0.1, tpPositionZ + tpRoot);
-            ctx.fill();
-
-            // Central Main Fuselage Tube
-            ctx.beginPath();
-            ctx.arc(0, -pLen * 0.35, pWid / 2, Math.PI, 0, false); // Nose curve
-            ctx.lineTo(pWid / 2, pLen * 0.35);                    // Right structural line
-            ctx.lineTo(pWid * 0.1, pLen * 0.5);                   // Tail tapering
-            ctx.lineTo(-pWid * 0.1, pLen * 0.5);                  // Rear seal
-            ctx.lineTo(-pWid / 2, pLen * 0.35);                   // Left structural line
-            ctx.closePath();
-            ctx.fill();
-
-            // Cockpit Window Accent Plate
-            ctx.fillStyle = '#1e293b';
-            ctx.beginPath();
-            ctx.arc(0, -pLen * 0.35, pWid * 0.35, Math.PI, 0, false);
-            ctx.lineTo(pWid * 0.25, -pLen * 0.33);
-            ctx.lineTo(-pWid * 0.25, -pLen * 0.33);
-            ctx.closePath();
-            ctx.fill();
-
-            ctx.restore();
+                // Center asset origin precisely over canvas coordinates
+                ctx.drawImage(
+                    planeImage, 
+                    -targetWidth / 2, 
+                    -targetHeight / 2, 
+                    targetWidth, 
+                    targetHeight
+                );
+                ctx.restore();
+            }
 
             // 6. Wind Direction Overlay Vector Arrow
             ctx.save();
