@@ -32,19 +32,36 @@
                 <label class="text-xs text-slate-400">Aircraft Preset</label>
                 <select id="aircraftPreset" class="bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-sm text-white focus:outline-none focus:border-blue-500">
                     <option value="custom">Custom Parameters</option>
-                    <option value="a321" selected>Airbus A321</option>
-                    <option value="b737">Boeing 737-800</option>
-                    <option value="b787">Boeing 787-9</option>
-                    <option value="atr72">ATR 72</option>
+                    <optgroup label="Civilian Airliners">
+                        <option value="a320">Airbus A320</option>
+                        <option value="a321" selected>Airbus A321</option>
+                        <option value="a330">Airbus A330neo</option>
+                        <option value="a350">Airbus A350-900</option>
+                        <option value="a380">Airbus A380</option>
+                        <option value="b737">Boeing 737-800</option>
+                        <option value="b739">Boeing 737 MAX 9</option>
+                        <option value="b777">Boeing 777-200</option>
+                        <option value="b787">Boeing 787-9</option>
+                        <option value="e190">Embraer E190</option>
+                        <option value="atr72">ATR 72-600</option>
+                    </optgroup>
+                    <optgroup label="Military Airframes (RAF)">
+                        <option value="c17">C-17 Globemaster III</option>
+                        <option value="a400m">Atlas A400M</option>
+                        <option value="c130j">Hercules C-130J</option>
+                        <option value="wedgetail">Wedgetail AEW1 (E-7)</option>
+                        <option value="rivetjoint">Rivet Joint RC-135W</option>
+                        <option value="poseidon">Poseidon MRA1 (P-8A)</option>
+                    </optgroup>
                 </select>
             </div>
 
             <div class="flex flex-col gap-1">
                 <div class="flex justify-between text-xs">
                     <span class="text-slate-400">Fuselage Length (L)</span>
-                    <span id="lengthVal" class="text-white font-mono">44.5m</span>
+                    <span id="lengthVal" class="text-white font-mono">44.51m</span>
                 </div>
-                <input type="range" id="lengthInput" min="5" max="80" step="0.5" value="44.5" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                <input type="range" id="lengthInput" min="5" max="85" step="0.01" value="44.51" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer">
             </div>
 
             <div class="flex flex-col gap-1">
@@ -52,7 +69,7 @@
                     <span class="text-slate-400">Fuselage Width (W)</span>
                     <span id="widthVal" class="text-white font-mono">3.95m</span>
                 </div>
-                <input type="range" id="widthInput" min="1" max="10" step="0.05" value="3.95" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+                <input type="range" id="widthInput" min="1" max="10" step="0.01" value="3.95" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer">
             </div>
 
             <div class="flex flex-col gap-1">
@@ -79,12 +96,12 @@
             
             <div class="bg-slate-900/50 border border-slate-800 rounded p-4 text-center">
                 <div class="text-xs text-blue-400 font-semibold tracking-wide uppercase">Theoretical Critical Area (TCA)</div>
-                <div id="tcaDisplay" class="text-3xl font-extrabold text-blue-400 font-mono mt-1">1,513 m²</div>
+                <div id="tcaDisplay" class="text-3xl font-extrabold text-blue-400 font-mono mt-1">1,511 m²</div>
             </div>
 
             <div class="bg-slate-900/50 border border-slate-800 rounded p-4 text-center">
                 <div class="text-xs text-emerald-400 font-semibold tracking-wide uppercase">Practical Critical Area (PCA)</div>
-                <div id="pcaDisplay" class="text-3xl font-extrabold text-emerald-400 font-mono mt-1">999 m²</div>
+                <div id="pcaDisplay" class="text-3xl font-extrabold text-emerald-400 font-mono mt-1">997 m²</div>
             </div>
             
             <div class="text-[10px] text-slate-500 leading-relaxed bg-slate-950 p-2 rounded border border-slate-900 font-mono">
@@ -120,8 +137,9 @@
     </div>
 
     <script>
-        // Preset Database
+        // Preset Database (Updated 2026 Commercial Fleet & RAF Military Specifications)
         const presets = {
+            // Civilian
             a320: { length: 37.57, width: 3.95 },
             a321: { length: 44.51, width: 3.95 },
             a330: { length: 63.66, width: 5.64 },
@@ -132,7 +150,14 @@
             b777: { length: 63.73, width: 6.20 },
             b787: { length: 62.80, width: 5.77 },
             e190: { length: 36.24, width: 3.01 },
-            atr72: { length: 27.17, width: 2.57 }
+            atr72: { length: 27.17, width: 2.57 },
+            // Military
+            c17: { length: 53.00, width: 6.50 },        // Boeing C-17 Globemaster III
+            a400m: { length: 45.10, width: 5.64 },      // Airbus A400M Atlas
+            c130j: { length: 34.37, width: 4.30 },      // Lockheed Martin C-130J-30 Hercules
+            wedgetail: { length: 33.60, width: 3.76 },  // Boeing E-7 Wedgetail (737-700 based)
+            rivetjoint: { length: 41.53, width: 4.30 }, // Boeing RC-135W Rivet Joint
+            poseidon: { length: 39.47, width: 3.76 }    // Boeing P-8A Poseidon (737-800 based)
         };
 
         // DOM Element Elements
@@ -211,13 +236,17 @@
             const L = parseFloat(lengthInput.value);
             const W = parseFloat(widthInput.value);
 
-            const aluminumMaterial = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.4, metalness: 0.2 });
+            // Apply different color scheme to visually flag military assets
+            const isMilitary = ['c17', 'a400m', 'c130j', 'wedgetail', 'rivetjoint', 'poseidon'].includes(presetSelect.value);
+            const baseColor = isMilitary ? 0x64748b : 0x94a3b8; // RAF Dark Camouflage Grey vs Aluminum Grey
+
+            const fuselageMaterial = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.5, metalness: 0.1 });
             const darkMaterial = new THREE.MeshStandardMaterial({ color: 0x1e293b });
 
             // Core Fuselage Cylinder
             const fuseGeom = new THREE.CylinderGeometry(W/2, W/2, L, 16);
             fuseGeom.rotateX(Math.PI / 2); // Orient forward along Z axis
-            const fuselage = new THREE.Mesh(fuseGeom, aluminumMaterial);
+            const fuselage = new THREE.Mesh(fuseGeom, fuselageMaterial);
             aircraftMesh.add(fuselage);
 
             // Nose Cone Geometry
@@ -231,46 +260,52 @@
             const wingWidth = L * 0.45;
             const wingDepth = W * 2.5;
             const wingGeom = new THREE.BoxGeometry(wingWidth, 0.2, wingDepth);
-            const wings = new THREE.Mesh(wingGeom, aluminumMaterial);
+            const wings = new THREE.Mesh(wingGeom, fuselageMaterial);
             wings.position.set(0, -W/4, -L*0.05);
             aircraftMesh.add(wings);
 
             // Tail Fin Geometry
             const tailGeom = new THREE.BoxGeometry(0.2, L*0.2, L*0.15);
-            const tail = new THREE.Mesh(tailGeom, aluminumMaterial);
+            const tail = new THREE.Mesh(tailGeom, fuselageMaterial);
             tail.position.set(0, (L*0.2)/2 + W/2, -L/2 + (L*0.15)/2);
             aircraftMesh.add(tail);
 
             // Procedural Boundary Plates
-            const tcaGeom = new THREE.RingGeometry(0, 1, 64);
-            tcaGeom.rotateX(-Math.PI / 2);
-            const tcaMat = new THREE.MeshBasicMaterial({ color: 0x3b82f6, side: THREE.DoubleSide, transparent: true, opacity: 0.15 });
-            tcaMesh = new THREE.Mesh(tcaGeom, tcaMat);
-            scene.add(tcaMesh);
+            if (!tcaMesh) {
+                const tcaGeom = new THREE.RingGeometry(0, 1, 64);
+                tcaGeom.rotateX(-Math.PI / 2);
+                const tcaMat = new THREE.MeshBasicMaterial({ color: 0x3b82f6, side: THREE.DoubleSide, transparent: true, opacity: 0.15 });
+                tcaMesh = new THREE.Mesh(tcaGeom, tcaMat);
+                scene.add(tcaMesh);
 
-            const tcaWireGeom = new THREE.RingGeometry(0.99, 1, 64);
-            tcaWireGeom.rotateX(-Math.PI / 2);
-            const tcaWireMat = new THREE.MeshBasicMaterial({ color: 0x3b82f6, side: THREE.DoubleSide });
-            const tcaWire = new THREE.Mesh(tcaWireGeom, tcaWireMat);
-            tcaMesh.add(tcaWire);
+                const tcaWireGeom = new THREE.RingGeometry(0.99, 1, 64);
+                tcaWireGeom.rotateX(-Math.PI / 2);
+                const tcaWireMat = new THREE.MeshBasicMaterial({ color: 0x3b82f6, side: THREE.DoubleSide });
+                const tcaWire = new THREE.Mesh(tcaWireGeom, tcaWireMat);
+                tcaMesh.add(tcaWire);
+            }
 
-            const pcaGeom = new THREE.RingGeometry(0, 1, 64);
-            pcaGeom.rotateX(-Math.PI / 2);
-            const pcaMat = new THREE.MeshBasicMaterial({ color: 0x10b981, side: THREE.DoubleSide, transparent: true, opacity: 0.25 });
-            pcaMesh = new THREE.Mesh(pcaGeom, pcaMat);
-            scene.add(pcaMesh);
+            if (!pcaMesh) {
+                const pcaGeom = new THREE.RingGeometry(0, 1, 64);
+                pcaGeom.rotateX(-Math.PI / 2);
+                const pcaMat = new THREE.MeshBasicMaterial({ color: 0x10b981, side: THREE.DoubleSide, transparent: true, opacity: 0.25 });
+                pcaMesh = new THREE.Mesh(pcaGeom, pcaMat);
+                scene.add(pcaMesh);
 
-            const pcaWireGeom = new THREE.RingGeometry(0.99, 1, 64);
-            pcaWireGeom.rotateX(-Math.PI / 2);
-            const pcaWireMat = new THREE.MeshBasicMaterial({ color: 0x10b981, side: THREE.DoubleSide });
-            const pcaWire = new THREE.Mesh(pcaWireGeom, pcaWireMat);
-            pcaMesh.add(pcaWire);
+                const pcaWireGeom = new THREE.RingGeometry(0.99, 1, 64);
+                pcaWireGeom.rotateX(-Math.PI / 2);
+                const pcaWireMat = new THREE.MeshBasicMaterial({ color: 0x10b981, side: THREE.DoubleSide });
+                const pcaWire = new THREE.Mesh(pcaWireGeom, pcaWireMat);
+                pcaMesh.add(pcaWire);
+            }
 
             // Dynamic Wind Indicator Vector Arrow
-            const arrowDir = new THREE.Vector3(1, 0, 0);
-            const arrowOrigin = new THREE.Vector3(0, 0.5, 0);
-            windArrowMesh = new THREE.ArrowHelper(arrowDir, arrowOrigin, 15, 0xef4444, 4, 1.5);
-            scene.add(windArrowMesh);
+            if (!windArrowMesh) {
+                const arrowDir = new THREE.Vector3(1, 0, 0);
+                const arrowOrigin = new THREE.Vector3(0, 0.5, 0);
+                windArrowMesh = new THREE.ArrowHelper(arrowDir, arrowOrigin, 15, 0xef4444, 4, 1.5);
+                scene.add(windArrowMesh);
+            }
         }
 
         // Calculation Core conforming to regulatory definitions
