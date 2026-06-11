@@ -243,85 +243,32 @@
             const fuselageMaterial = new THREE.MeshStandardMaterial({ color: baseColor, roughness: 0.5, metalness: 0.1 });
             const darkMaterial = new THREE.MeshStandardMaterial({ color: 0x1e293b });
 
-            // 1. Core Fuselage Cylinder (Main cabin section)
-            const bodyLength = L * 0.70;
-            const fuseGeom = new THREE.CylinderGeometry(W/2, W/2, bodyLength, 16);
-            fuseGeom.rotateX(Math.PI / 2);
-            fuseGeom.translate(0, 0, L * 0.05); // Center relative to overall structure
+            // Core Fuselage Cylinder
+            const fuseGeom = new THREE.CylinderGeometry(W/2, W/2, L, 16);
+            fuseGeom.rotateX(Math.PI / 2); // Orient forward along Z axis
             const fuselage = new THREE.Mesh(fuseGeom, fuselageMaterial);
             aircraftMesh.add(fuselage);
 
-            // 2. Nose Cone Geometry
-            const noseLength = L * 0.12;
-            const noseGeom = new THREE.ConeGeometry(W/2, noseLength, 16);
+            // Nose Cone Geometry
+            const noseGeom = new THREE.ConeGeometry(W/2, L*0.15, 16);
             noseGeom.rotateX(Math.PI / 2);
-            noseGeom.translate(0, 0, (bodyLength / 2) + (noseLength / 2) + (L * 0.05));
+            noseGeom.translate(0, 0, L/2 + (L*0.15)/2);
             const nose = new THREE.Mesh(noseGeom, darkMaterial);
             aircraftMesh.add(nose);
 
-            // 3. Tailbone (Tapered rear fuselage structure)
-            const tailboneLength = L * 0.18;
-            const tailboneGeom = new THREE.CylinderGeometry(W/2, W * 0.1, tailboneLength, 16);
-            tailboneGeom.rotateX(Math.PI / 2);
-            tailboneGeom.translate(0, 0, -((bodyLength / 2) + (tailboneLength / 2) - (L * 0.05)));
-            const tailbone = new THREE.Mesh(tailboneGeom, fuselageMaterial);
-            aircraftMesh.add(tailbone);
+            // Main Wing Plain Representation
+            const wingWidth = L * 0.45;
+            const wingDepth = W * 2.5;
+            const wingGeom = new THREE.BoxGeometry(wingWidth, 0.2, wingDepth);
+            const wings = new THREE.Mesh(wingGeom, fuselageMaterial);
+            wings.position.set(0, -W/4, -L*0.05);
+            aircraftMesh.add(wings);
 
-            // 4. Detailed Swept Main Wings
-            const wingSpan = L * 0.95; 
-            const wingRootChord = L * 0.18;
-            const wingTipChord = L * 0.04;
-            const wingThickness = 0.25;
-
-            const leftWingGeom = new THREE.BufferGeometry();
-            // Vertices relative to wing connection coordinates
-            const lWingVertices = new Float32Array([
-                0, 0, 0,                                          // Root Leading Edge
-                0, 0, -wingRootChord,                             // Root Trailing Edge
-                -wingSpan/2, -W*0.05, -wingRootChord*0.6,         // Tip Trailing Edge
-                
-                0, 0, 0,                                          // Root Leading Edge
-                -wingSpan/2, -W*0.05, -wingRootChord*0.6,         // Tip Trailing Edge
-                -wingSpan/2, -W*0.05, -wingRootChord*0.4          // Tip Leading Edge
-            ]);
-            leftWingGeom.setAttribute('position', new THREE.BufferAttribute(lWingVertices, 3));
-            leftWingGeom.computeVertexNormals();
-            
-            const leftWing = new THREE.Mesh(leftWingGeom, fuselageMaterial);
-            leftWing.position.set(-W/2, -W*0.1, L * 0.08); // Fixed to mid-fuselage wing box
-            aircraftMesh.add(leftWing);
-
-            // Mirror Right Wing Geometry
-            const rightWingGeom = new THREE.BufferGeometry();
-            const rWingVertices = new Float32Array([
-                0, 0, 0,                                          // Root Leading Edge
-                0, 0, -wingRootChord,                             // Root Trailing Edge
-                wingSpan/2, -W*0.05, -wingRootChord*0.6,          // Tip Trailing Edge
-                
-                0, 0, 0,                                          // Root Leading Edge
-                wingSpan/2, -W*0.05, -wingRootChord*0.6,          // Tip Trailing Edge
-                wingSpan/2, -W*0.05, -wingRootChord*0.4           // Tip Leading Edge
-            ]);
-            rightWingGeom.setAttribute('position', new THREE.BufferAttribute(rWingVertices, 3));
-            rightWingGeom.computeVertexNormals();
-            
-            const rightWing = new THREE.Mesh(rightWingGeom, fuselageMaterial);
-            rightWing.position.set(W/2, -W*0.1, L * 0.08);
-            aircraftMesh.add(rightWing);
-
-            // 5. Vertical Stabilizer (Tail Fin)
-            const finHeight = L * 0.22;
-            const finGeom = new THREE.BoxGeometry(0.18, finHeight, L * 0.12);
-            const fin = new THREE.Mesh(finGeom, fuselageMaterial);
-            fin.position.set(0, (finHeight / 2) + (W / 3), -((bodyLength / 2) + (tailboneLength * 0.4) - (L * 0.05)));
-            aircraftMesh.add(fin);
-
-            // 6. Horizontal Stabilizers
-            const stabSpan = L * 0.32;
-            const stabGeom = new THREE.BoxGeometry(stabSpan, 0.08, L * 0.06);
-            const stabilizers = new THREE.Mesh(stabGeom, fuselageMaterial);
-            stabilizers.position.set(0, W*0.2, -((bodyLength / 2) + (tailboneLength * 0.7) - (L * 0.05)));
-            aircraftMesh.add(stabilizers);
+            // Tail Fin Geometry
+            const tailGeom = new THREE.BoxGeometry(0.2, L*0.2, L*0.15);
+            const tail = new THREE.Mesh(tailGeom, fuselageMaterial);
+            tail.position.set(0, (L*0.2)/2 + W/2, -L/2 + (L*0.15)/2);
+            aircraftMesh.add(tail);
 
             // Procedural Boundary Plates
             if (!tcaMesh) {
