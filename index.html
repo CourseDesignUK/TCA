@@ -307,7 +307,7 @@
             // The arrow originates at the outer perimeter from the source angle and points INWARD downwind.
             ctx.save();
             const arrowLength = Math.min(45, rawMinimumViewportDimension * 0.1) + (windSpeed * 0.4);
-            const arrowOriginDistance = tcaRadius + (20 * scale);
+            const arrowOriginDistance = tcaRadius + (20 * scale) + arrowLength;
             
             // Plot origin location coordinate at the source boundary point
             const arrowX = centerX + (sourceX * arrowOriginDistance);
@@ -315,7 +315,7 @@
 
             ctx.translate(arrowX, arrowY);
             // Rotate local coordinate matrix to point precisely toward center (downwind trajectory)
-            ctx.rotate(compassRad + Math.PI);
+            ctx.rotate(compassRad);
 
             ctx.strokeStyle = '#ef4444';
             ctx.fillStyle = '#ef4444';
