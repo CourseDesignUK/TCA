@@ -259,13 +259,7 @@
             const nose = new THREE.Mesh(noseGeom, darkMaterial);
             aircraftMesh.add(nose);
 
-            // 3. Tailbone (Tapered rear fuselage structure)
-            const tailboneLength = L * 0.18;
-            const tailboneGeom = new THREE.CylinderGeometry(W/2, W * 0.1, tailboneLength, 16);
-            tailboneGeom.rotateX(Math.PI / 2);
-            tailboneGeom.translate(0, 0, -((bodyLength / 2) + (tailboneLength / 2) - (L * 0.05)));
-            const tailbone = new THREE.Mesh(tailboneGeom, fuselageMaterial);
-            aircraftMesh.add(tailbone);
+            
 
             // 4. Scaled Main Wings (Proportionate to true airliner aspect ratios)
             const wingSpan = L * 1.10; 
@@ -275,12 +269,12 @@
             const leftWingGeom = new THREE.BufferGeometry();
             const lWingVertices = new Float32Array([
                 0, 0, 0,                                          // Root Leading Edge
-                -wingSpan/2, -W*0.02, -wingRootChord*0.65,        // Tip Trailing Edge
+                -wingSpan/2, -W*0.02, -wingRootChord*-0.65,        // Tip Trailing Edge
                 0, 0, -wingRootChord,                             // Root Trailing Edge
                 
                 0, 0, 0,                                          // Root Leading Edge
-                -wingSpan/2, -W*0.02, -wingRootChord*0.45,        // Tip Leading Edge
-                -wingSpan/2, -W*0.02, -wingRootChord*0.65         // Tip Trailing Edge
+                -wingSpan/2, -W*0.02, -wingRootChord*-0.45,        // Tip Leading Edge
+                -wingSpan/2, -W*0.02, -wingRootChord*-0.65         // Tip Trailing Edge
             ]);
             leftWingGeom.setAttribute('position', new THREE.BufferAttribute(lWingVertices, 3));
             leftWingGeom.computeVertexNormals();
