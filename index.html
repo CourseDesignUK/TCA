@@ -270,18 +270,17 @@
             // 4. Scaled Main Wings (Proportionate to true airliner aspect ratios)
             const wingSpan = L * 1.10; 
             const wingRootChord = L * 0.20;
-            const wingTipChord = L * 0.04;
 
-            // Left Wing Mesh
+            // Left Wing Mesh (Winding order corrected to Counter-Clockwise for upward normal vector)
             const leftWingGeom = new THREE.BufferGeometry();
             const lWingVertices = new Float32Array([
                 0, 0, 0,                                          // Root Leading Edge
-                0, 0, -wingRootChord,                             // Root Trailing Edge
                 -wingSpan/2, -W*0.02, -wingRootChord*0.65,        // Tip Trailing Edge
+                0, 0, -wingRootChord,                             // Root Trailing Edge
                 
                 0, 0, 0,                                          // Root Leading Edge
-                -wingSpan/2, -W*0.02, -wingRootChord*0.65,        // Tip Trailing Edge
-                -wingSpan/2, -W*0.02, -wingRootChord*0.45         // Tip Leading Edge
+                -wingSpan/2, -W*0.02, -wingRootChord*0.45,        // Tip Leading Edge
+                -wingSpan/2, -W*0.02, -wingRootChord*0.65         // Tip Trailing Edge
             ]);
             leftWingGeom.setAttribute('position', new THREE.BufferAttribute(lWingVertices, 3));
             leftWingGeom.computeVertexNormals();
@@ -290,7 +289,7 @@
             leftWing.position.set(-W/2, -W*0.08, L * 0.08);
             aircraftMesh.add(leftWing);
 
-            // Right Wing Mesh
+            // Right Wing Mesh (Maintained original correct counter-clockwise setup)
             const rightWingGeom = new THREE.BufferGeometry();
             const rWingVertices = new Float32Array([
                 0, 0, 0,                                          // Root Leading Edge
@@ -320,16 +319,16 @@
             const tailplaneRootChord = L * 0.10;
             const tailplanePositionZ = -((bodyLength / 2) + (tailboneLength * 0.7) - (L * 0.05));
 
-            // Left Tailplane Mesh
+            // Left Tailplane Mesh (Correct CCW layout)
             const leftStabGeom = new THREE.BufferGeometry();
             const lStabVertices = new Float32Array([
                 0, 0, 0,                                          // Root Leading Edge
-                0, 0, -tailplaneRootChord,                        // Root Trailing Edge
                 -tailplaneSpan/2, 0, -tailplaneRootChord*0.75,    // Tip Trailing Edge
+                0, 0, -tailplaneRootChord,                        // Root Trailing Edge
                 
                 0, 0, 0,                                          // Root Leading Edge
-                -tailplaneSpan/2, 0, -tailplaneRootChord*0.75,    // Tip Trailing Edge
-                -tailplaneSpan/2, 0, -tailplaneRootChord*0.55     // Tip Leading Edge
+                -tailplaneSpan/2, 0, -tailplaneRootChord*0.55,     // Tip Leading Edge
+                -tailplaneSpan/2, 0, -tailplaneRootChord*0.75     // Tip Trailing Edge
             ]);
             leftStabGeom.setAttribute('position', new THREE.BufferAttribute(lStabVertices, 3));
             leftStabGeom.computeVertexNormals();
@@ -338,7 +337,7 @@
             leftStab.position.set(-W*0.1, W*0.15, tailplanePositionZ);
             aircraftMesh.add(leftStab);
 
-            // Right Tailplane Mesh
+            // Right Tailplane Mesh (Correct CCW layout)
             const rightStabGeom = new THREE.BufferGeometry();
             const rStabVertices = new Float32Array([
                 0, 0, 0,                                          // Root Leading Edge
